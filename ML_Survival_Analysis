@@ -1,0 +1,38 @@
+# Importing necessary libraries
+import numpy as np
+import pandas as pd
+import os
+from sklearn.ensemble import RandomForestClassifier
+
+# Reading in the training and test data
+train_data = pd.read_csv("/kaggle/input/titanic/train.csv")
+test_data = pd.read_csv("/kaggle/input/titanic/test.csv")
+
+# Determining the survival rate of women and men in the training set
+women = train_data.loc[train_data.Sex == 'female']["Survived"]
+rate_women = sum(women)/len(women)
+print("% of women who survived:", rate_women)
+
+men = train_data.loc[train_data.Sex == 'male']["Survived"]
+rate_men = sum(men)/len(men)
+print("% of men who survived:", rate_men)
+
+# Selecting the features to use for the model
+features = ["Pclass", "Sex", "SibSp", "Parch"]
+X_train = pd.get_dummies(train_data[features])
+X_test = pd.get_dummies(test_data[features])
+
+# Defining the target variable and fitting a random forest classifier to the training data
+y_train = train_data["Survived"]
+model = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=1)
+model.fit(X_train, y_train)
+
+# Making predictions on the test data using the trained model
+predictions = model.predict(X_test)
+
+# Creating a dataframe of the passenger IDs and predicted survival outcomes for the test data
+output = pd.DataFrame({'PassengerId': test_data.PassengerId, 'Survived': predictions})
+
+# Writing the dataframe to a CSV file for submission to Kaggle
+output.to_csv('submission.csv', index=False)
+print("Your submission was successfully saved!")
